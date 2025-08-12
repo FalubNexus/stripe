@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Paiement via Stripe</title>
+  <script src="https://js.stripe.com/v3/"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2rem; text-align: center; }
+    input, button { padding: 1rem; margin: 1rem; }
+    button { background: #0077ff; color: white; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Paiement sécurisé via Stripe</h1>
+  <input type="email" id="email" placeholder="Votre email" required />
+  <input type="number" id="montant" placeholder="Montant en ZAR" min="1" required />
+  <button id="payButton">Payer avec Stripe</button>
+  <div id="response"></div>
+
+  <script>
+    const stripe = Stripe('pk_test_51RvEAr97ANXxtcMNyfeYLDHhMFimAremDGraK3rTeaWBXdH81d7OpyvEMwhFDIX1X6U6rWwEuruzw4Tf8gz8RoZ600fF81ZBlG'); // ← Mets ta clé test
+    const payButton = document.getElementById('payButton');
+    const responseEl = document.getElementById('response');
+
+    payButton.addEventListener('click', async () => {
+      const email = document.getElementById('email').value;
+      const montant = document.getElementById('montant').value;
+      const amount = Math.round(parseFloat(montant) * 100);
+
+      if (!email || !montant) {
+        responseEl.innerText = "Veuillez remplir tous les champs.";
+        return;
+      }
+
+      responseEl.innerText = "Redirection en cours...";
+
+      const res = await fetch('/paiement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, email })
+      });
+
+      const data = await res.json();
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        responseEl.innerText = "Erreur : " + data.message;
+      }
+    });
+  </script>
+</body>
+</html>
